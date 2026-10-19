@@ -1,0 +1,30 @@
+{
+  "min": [
+    {
+      "producer": "P1",
+      "interval": 5,
+      "previousWin": 2000,
+      "followingWin": 2005
+    },
+    {
+      "producer": "P1",
+      "interval": 5,
+      "previousWin": 2005,
+      "followingWin": 2010
+    }
+  ],
+  "max": [
+    {
+      "producer": "P1",
+      "interval": 5,
+      "previousWin": 2000,
+      "followingWin": 2005
+    },
+    {
+      "producer": "P1",
+      "interval": 5,
+      "previousWin": 2005,
+      "followingWin": 2010
+    }
+  ]
+}

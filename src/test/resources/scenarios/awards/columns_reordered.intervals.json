@@ -1,0 +1,18 @@
+{
+  "min": [
+    {
+      "producer": "Yan",
+      "interval": 1,
+      "previousWin": 1980,
+      "followingWin": 1981
+    }
+  ],
+  "max": [
+    {
+      "producer": "Zed",
+      "interval": 19,
+      "previousWin": 1980,
+      "followingWin": 1999
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "min": [
+    {
+      "producer": "P1",
+      "interval": 4,
+      "previousWin": 2000,
+      "followingWin": 2004
+    }
+  ],
+  "max": [
+    {
+      "producer": "P1",
+      "interval": 4,
+      "previousWin": 2000,
+      "followingWin": 2004
+    }
+  ]
+}

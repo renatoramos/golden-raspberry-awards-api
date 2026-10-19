@@ -1,0 +1,24 @@
+{
+  "min": [
+    {
+      "producer": "Bob",
+      "interval": 3,
+      "previousWin": 2000,
+      "followingWin": 2003
+    }
+  ],
+  "max": [
+    {
+      "producer": "Ann",
+      "interval": 4,
+      "previousWin": 2000,
+      "followingWin": 2004
+    },
+    {
+      "producer": "Cy",
+      "interval": 4,
+      "previousWin": 2000,
+      "followingWin": 2004
+    }
+  ]
+}

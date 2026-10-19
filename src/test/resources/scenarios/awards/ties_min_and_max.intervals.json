@@ -1,0 +1,30 @@
+{
+  "min": [
+    {
+      "producer": "Ann",
+      "interval": 1,
+      "previousWin": 1990,
+      "followingWin": 1991
+    },
+    {
+      "producer": "Bob",
+      "interval": 1,
+      "previousWin": 2000,
+      "followingWin": 2001
+    }
+  ],
+  "max": [
+    {
+      "producer": "Cy",
+      "interval": 10,
+      "previousWin": 2010,
+      "followingWin": 2020
+    },
+    {
+      "producer": "Dee",
+      "interval": 10,
+      "previousWin": 2030,
+      "followingWin": 2040
+    }
+  ]
+}
