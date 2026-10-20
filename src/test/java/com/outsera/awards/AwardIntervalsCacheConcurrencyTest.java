@@ -45,7 +45,7 @@ class AwardIntervalsCacheConcurrencyTest {
                         JdbcTemplateAutoConfiguration.class, JdbcClientAutoConfiguration.class))
                 .withUserConfiguration(Modules.class)
                 .withBean("counting", BeanPostProcessor.class, () -> new CountingProducerWins(queries))
-                .withPropertyValues("spring.sql.init.mode=always", "app.movies.csv-location=classpath:scenarios/official.csv")
+                .withPropertyValues("spring.sql.init.mode=always", "app.movies.csv-location=classpath:Movielist.csv")
                 .run(context -> {
                     var cache = context.getBean(AwardIntervalsCache.class);
                     assertThat(queries).hasValue(0);

@@ -115,7 +115,7 @@ class CsvScenariosTest {
 
     @Test
     void logsHowManyMoviesWereLoaded(CapturedOutput output) {
-        runnerFor("scenarios/official.csv").run(context -> assertThat(context).hasNotFailed());
+        runnerFor("Movielist.csv").run(context -> assertThat(context).hasNotFailed());
 
         assertThat(output).contains("206 filmes carregados");
     }

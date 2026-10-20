@@ -38,7 +38,8 @@ java -jar build/libs/movies-0.0.1-SNAPSHOT.jar
 Sem mexer em código, de duas formas:
 
 - **Trocar o arquivo** `src/main/resources/Movielist.csv` por outro com o mesmo nome. O arquivo vai empacotado, então é
-  preciso rodar de novo `./gradlew bootRun` ou `./gradlew bootJar`.
+  preciso rodar de novo `./gradlew bootRun` ou `./gradlew bootJar`. Os testes conferem a resposta para esse arquivo,
+  então eles passam a falhar até os esperados serem regenerados com `tools/oracle/generate-fixtures.sh`.
 - **Apontar para um arquivo externo** pela propriedade `app.movies.csv-location`. O nome `movielist.csv.location` é
   aceito como alias e prevalece se os dois forem informados.
 
@@ -59,8 +60,10 @@ Se o arquivo não existir ou for inválido, a aplicação **não sobe** e a mens
 Todos os testes são de integração: contexto Spring real, H2 real e, nos cenários por HTTP, Tomcat real. Não há mocks nem
 testes unitários.
 
-Os testes usam o seu próprio dataset oficial, `src/test/resources/scenarios/official.csv`, configurado em
-`src/test/resources/config/application.properties`. Por isso trocar `src/main/resources/Movielist.csv` não afeta a suíte.
+Os testes do dataset oficial (`AwardIntervalsEndpointTest`, `OfficialDatasetLoadTest`) carregam o arquivo padrão da
+aplicação, `src/main/resources/Movielist.csv`, e comparam a resposta inteira com os esperados gerados pelo oráculo
+(`scenarios/official.intervals.json` e `scenarios/official.wins.tsv`). Qualquer mudança nesse arquivo que altere o
+resultado da API faz a suíte falhar.
 
 | Classe | O que garante |
 |---|---|

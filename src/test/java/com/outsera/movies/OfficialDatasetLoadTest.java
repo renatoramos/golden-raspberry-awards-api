@@ -10,8 +10,8 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.modulith.test.ApplicationModuleTest;
 
 /**
- * Sobe o módulo {@code movies} com o CSV oficial da fixture (scenarios/official.csv) e confere, pela API pública,
- * as vitórias esperadas calculadas pelo oráculo Python (tools/oracle).
+ * Sobe o módulo {@code movies} com o CSV padrão da aplicação (src/main/resources/Movielist.csv) e confere, pela API
+ * pública, as vitórias esperadas calculadas pelo oráculo Python (tools/oracle).
  */
 @ApplicationModuleTest
 class OfficialDatasetLoadTest {

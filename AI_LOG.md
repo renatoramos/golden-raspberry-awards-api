@@ -354,6 +354,57 @@ Depois o autor trocou o modelo para Claude Opus 5.5 com `/model` e reenviou o me
 - Este `AI_LOG.md` escrito.
 - `docs/ai-interactions.md` removido: era um resumo escrito pelo próprio agente, substituído por este registro.
 
+### 13. Feedback do avaliador: testes que não dependiam do `Movielist.csv`
+
+Sessão posterior, depois do commit `4b90aa1`, com Claude Opus 5.5. Ferramentas: shell, leitura e edição de arquivos e
+uma `git worktree` temporária.
+
+```
+recebi essa msg do avalidador vamos entender juntos o que aconteceu ?
+
+Paola Ferreira:
+ Oi, Renato! Equipe técnica solicitou um ajuste no teste, pode verificar e me retornar com a correção?
+
+Itens observados:
+- Requisito não funcional 2: Após modificar o arquivo em src/main/resources nenhum teste falhou. O teste de integração deve garantir que os dados retornados na API estão de acordo com o conteúdo do arquivo padrão, e deve falhar se o arquivo for modificado de forma que qualquer aspecto do resultado mude.
+```
+
+**O que foi feito:** diagnóstico, sem mudar código. A causa era a decisão dos "testes herméticos" do item 10:
+`src/test/resources/config/application.properties` apontava `app.movies.csv-location` para
+`scenarios/official.csv`, uma cópia byte a byte igual (`cmp`) do `Movielist.csv`. Nenhum teste lia o arquivo de
+`src/main/resources`, então alterá-lo não derrubava nada. A asserção do endpoint já era estrita (`isStrictlyEqualTo` no
+JSON inteiro); o problema estava na fonte dos dados.
+
+```
+removendo o arquivo application.properties resolve o problema ?
+```
+
+**O que foi feito:** experimento numa `git worktree` descartável. Sem o arquivo, a suíte passou com o CSV original.
+Com a vitória de 1991 do Joel Silver trocada para 1992 no `Movielist.csv`, 3 testes falharam (`AwardIntervalsEndpointTest`
+×2, `OfficialDatasetLoadTest` ×1). A worktree foi removida e o repositório do autor ficou intacto.
+
+```
+perfeito ajuste esses pontos, deixe os teste apontando para o Movielist.csv
+```
+
+**O que foi feito:**
+- Removidos `src/test/resources/config/application.properties` e `src/test/resources/scenarios/official.csv`.
+- `AwardIntervalsCacheConcurrencyTest` e `CsvScenariosTest` passaram a usar `classpath:Movielist.csv`. O javadoc de
+  `OfficialDatasetLoadTest` foi atualizado.
+- `tools/oracle/generate-fixtures.sh` passou a gerar `official.intervals.json` e `official.wins.tsv` a partir de
+  `src/main/resources/Movielist.csv`. Ao rodá-lo, nenhuma fixture mudou.
+- `README.md` atualizado (seção de testes e aviso em "Usando outro CSV").
+- Suíte: 56 testes, 0 falhas.
+- Mutações no `Movielist.csv` (cada uma desfeita com `git checkout` antes da seguinte):
+
+| Mutação | Testes que falharam |
+|---|---|
+| Vitória do Joel Silver 1991 → 1992 | 3 de 56 |
+| `Matthew Vaughn` → `Matthew Vaughns` (filme vencedor de 2002) | 4 de 56 |
+| `Road House` (1989, não vencedor) vira vencedor | 6 de 56 |
+
+- Erros do agente nesta etapa: E17, E18.
+
 ## Erros do agente e correções
 
 | # | Etapa | O que falhou | Como foi percebido | Correção |
@@ -374,6 +425,8 @@ Depois o autor trocou o modelo para Claude Opus 5.5 com `/model` e reenviou o me
 | E14 | 9 | Uma execução da medição teve carga de 12,5 s contra ~6 s nas demais | Leitura dos resultados | Mais 2 execuções rodadas e mediana de 5 reportada; a causa não foi isolada |
 | E15 | 10 | O `timeout` não existe no macOS, e o `grep` do agente escondeu o erro (as medições de heap pareciam vazias) | Logs inexistentes | Refeito com `perl -e 'alarm 150; exec @ARGV'` |
 | E16 | 11 | Com os testes herméticos, os 8 cenários de `AwardIntervalsScenariosTest` quebraram: `SpringApplicationBuilder.properties()` define propriedades **padrão**, de precedência mínima, e o novo `config/application.properties` passou à frente | Suíte vermelha | CSV do cenário passado como argumento de linha de comando |
+| E17 | 10 | Os "testes herméticos" desligaram a suíte do `src/main/resources/Movielist.csv`, contrariando o requisito não funcional 2: alterar o arquivo não derrubava nenhum teste | Feedback do avaliador (item 13) | Testes apontados para `Movielist.csv` e cópia removida; provado com 3 mutações (item 13) |
+| E18 | 13 | A primeira execução do experimento terminou com exit 1, que parecia falha de teste. Era o Gradle rodando na JVM 11 padrão do shell ("Gradle requires JVM 17 or later") | Saída completa do `./gradlew` | Rodado com `JAVA_HOME` do JDK 24 |
 
 ## Decisões de design e alternativas descartadas
 
@@ -391,7 +444,8 @@ Depois o autor trocou o modelo para Claude Opus 5.5 com `/model` e reenviou o me
 | Cache do resultado inteiro | Otimizar só a consulta | A consulta era 62% do tempo aquecido e quase todo o tempo frio |
 | Aquecimento em `SmartLifecycle` fase 0, antes da porta | (a) `ApplicationReadyEvent`, pedido no item 8 e usado primeiro; (b) `SmartInitializingSingleton` | (a) deixava a 1ª requisição em ~1,1 s e o autor a trocou (item 9); (b) descartado pelo raciocínio de ordem (ver E13) |
 | Alias `movielist.csv.location` mantendo `app.movies.csv-location` | Renomear a propriedade | O autor não escolheu; o agente optou por não quebrar o nome já documentado |
-| Testes com `src/test/resources/config/application.properties` | `application.properties` na raiz dos recursos de teste | O da raiz substituiria o principal (perdendo `spring.sql.init.mode=always`); `config/` soma-se a ele |
+| Testes com `src/test/resources/config/application.properties` | `application.properties` na raiz dos recursos de teste | O da raiz substituiria o principal (perdendo `spring.sql.init.mode=always`); `config/` soma-se a ele. **Revertido no item 13** (ver E17) |
+| Testes do dataset oficial lendo `src/main/resources/Movielist.csv` (item 13) | Cópia própria em `src/test/resources` | Exigência do avaliador: a suíte tem de falhar quando o arquivo padrão muda; o autor pediu para apontar os testes para ele |
 | Esperados dos testes gerados pelo oráculo Python e versionados | Esperados calculados pelo próprio código | Pedido do autor (item 1); evita o teste confirmar o próprio bug |
 | Cenários de carga com `ApplicationContextRunner`; cenários de `awards` com a aplicação inteira via `SpringApplicationBuilder` | Um `@SpringBootTest` por classe e cenário | Um contexto real por CSV sem dezenas de classes |
 | Instrumentação e A/B de índices numa cópia descartável | Instrumentar o repositório e remover depois | O repositório nunca recebeu código temporário |
@@ -411,6 +465,7 @@ Depois o autor trocou o modelo para Claude Opus 5.5 com `/model` e reenviou o me
 - **Item 9:** mudou o aquecimento para antes da porta.
 - **Item 11:** aprovou as três correções da auditoria.
 - **Item 12:** proibiu o commit por enquanto.
+- **Item 13:** pediu que os testes apontassem para o `Movielist.csv` e aprovou os ajustes propostos.
 
 ## Medições feitas na sessão
 
@@ -480,6 +535,6 @@ Ponta a ponta no jar real, com o índice no `schema.sql` (3 execuções cada, se
 
 ## Estado ao fim do registro
 
-- Última execução completa da suíte: 54 testes, 0 falhas.
-- `git init` feito, **sem nenhum commit** e sem remoto, por pedido do autor.
+- Última execução completa da suíte (item 13): 56 testes, 0 falhas.
+- Commit `4b90aa1` feito antes do item 13. As mudanças do item 13 ainda não foram commitadas.
 - Não foram executados `/code-review` nem lint.
